@@ -1,0 +1,58 @@
+<div class="row ps-4 pt-5 my-5">
+    <h1 class="col ">Доходы и расходы</h1>
+</div>
+<div class=" d-flex justify-content-start gap-2 mb-4 ps-4">
+    <div class=" ">
+        <a href="#/income-outcome-create" type="button" class="btn btn-success">Создать доход</a>
+    </div>
+    <div class="">
+        <a href="#/income-outcome-create" type="button" class="btn btn-danger">Создать расход</a>
+    </div>
+</div>
+<div class=" row fw-medium w-75 ps-4 ms-1 py-5 my-5 d-flex justify-content-center align-items-center gap-3">
+    <button id="today" class="custom-buttons-color active_background fw-medium col btn btn-light">Сегодня</button>
+    <button id="week" class="custom-buttons-color fw-medium col btn btn-light">Неделя</button>
+    <button id="month" class="custom-buttons-color fw-medium col btn btn-light">Месяц</button>
+    <button id="year" class="custom-buttons-color fw-medium col  btn btn-light">Год</button>
+    <button id="all" class="custom-buttons-color fw-medium col btn btn-light">Все</button>
+    <button id="interval" class="custom-buttons-color fw-medium col btn btn-light"> Интервал</button>
+    <div class="col d-flex align-items-center justify-content-center gap-2 pe-0">
+        <div class=" text-dark">
+            c
+        </div>
+        <div class="input-group date" id="datepicker">
+            <input id="dateBegin" type="text"
+                   class="dates rounded px-2 border-0 text-decoration-underline form-control"
+                   placeholder="Дата">
+            <span class="input-group-append"></span>
+        </div>
+    </div>
+    <div class="col d-flex align-items-center justify-content-center gap-2">
+        <div class=" text-dark">
+            по
+        </div>
+        <div class="input-group date" id="datepickerTwo">
+            <input id="dateEnd" type="text"
+                   class="dates px-2 rounded border-0 text-decoration-underline form-control"
+                   placeholder="Дата">
+            <span class="input-group-append"></span>
+        </div>
+    </div>
+</div>
+<div class="chart row">
+    <table class="text-center table">
+        <thead>
+        <tr>
+            <th scope="col">№ Операции</th>
+            <th scope="col">Тип</th>
+            <th scope="col">Категория</th>
+            <th scope="col">Сумма</th>
+            <th scope="col">Дата</th>
+            <th scope="col">Комментарий</th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+</div>
