@@ -71,7 +71,7 @@ export class Auth {
         localStorage.setItem(this.userInfoKey, JSON.stringify(info));
     }
 
-    public static getUserInfo(): null {
+    public static getUserInfo():UserInfoType| null {
         const userInfo: string | null = localStorage.getItem(this.userInfoKey);
         const userToken: string | null = localStorage.getItem(this.accessTokenKey);
         if (userInfo && userToken) {

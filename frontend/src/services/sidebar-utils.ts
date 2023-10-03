@@ -1,13 +1,43 @@
 import {Auth} from "./auth";
 import {CustomHttp} from "./custom-http";
 import config from "../../config/config";
+import {UserInfoType} from "../types/user-info.type";
+import {ResponseBalanceType} from "../types/response-balance.type";
 
 export class SidebarUtils {
+    private readonly user: UserInfoType | null
+    private readonly root: HTMLElement | null
+    private readonly btnIncome: HTMLElement | null
+    private readonly btnPayments: HTMLElement | null
+    private readonly userFullName: HTMLElement | null
+    private readonly userLogout: HTMLElement | null
+    private readonly btnMain: HTMLElement | null
+    private readonly svgMain: HTMLElement | null
+    private readonly btnIncomeOutcome: HTMLElement | null
+    private readonly svgIncomeOutcome: HTMLElement | null
+    private readonly btnToggle: HTMLElement | null
+    private readonly svgToggle: HTMLElement | null
+    private readonly ul: HTMLElement | null
+    private readonly beforeChild: HTMLElement | null
+    private nav: boolean
+
     constructor() {
         this.user = Auth.getUserInfo();
         this.root = document.getElementById('root');
         this.beforeChild = document.getElementById('content');
         this.nav = false;
+        this.btnIncome = null
+        this.btnPayments = null
+        this.userFullName = null
+        this.userLogout = null
+        this.btnMain = null
+        this.svgMain = null
+        this.btnIncomeOutcome = null
+        this.svgIncomeOutcome = null
+        this.btnToggle = null
+        this.svgToggle = null
+        this.ul = null
+
         this.show();
         if (this.nav) {
             this.btnIncome = document.getElementById('btnIncome');
@@ -28,18 +58,23 @@ export class SidebarUtils {
 
     }
 
-    static async showBalance() {
+    public static async showBalance(): Promise<void> {
+
         try {
-            const result = await CustomHttp.request(config.host + '/balance',);
+            const result: ResponseBalanceType = await CustomHttp.request(config.host + '/balance',);
             if (result.balance || result.balance == 0) {
-                document.getElementById("sidebarSum").innerText = result.balance;
+                const sideBarSum: HTMLElement | null = document.getElementById("sidebarSum")
+                if (sideBarSum) {
+                    sideBarSum.innerText = result.balance.toString();
+                }
             }
         } catch (error) {
             return console.log(error);
         }
     }
 
-    buttonToggle() {
+    private buttonToggle(): void {
+        if (!this.ul || !this.btnToggle || !this.svgToggle) return
         if (window.location.hash === "#/income" || window.location.hash === "#/income-create" || window.location.hash === "#/income-update" || window.location.hash === "#/expense" || window.location.hash === "#/expense-create" || window.location.hash === "#/expense-update") {
             this.ul.classList.add('show');
             this.btnToggle.classList.remove('collapsed');
@@ -49,12 +84,13 @@ export class SidebarUtils {
             this.btnToggle.classList.add('collapsed');
         }
 
-        function onClassChange(node, callback) {
-            let lastClassString = node.classList.toString();
-            const mutationObserver = new MutationObserver((mutationList) => {
+        // Здесь в callback поставил any, не знаю какого типа параметры в этом месте...
+        function onClassChange(node: HTMLElement, callback: any): MutationObserver {
+            let lastClassString: string = node.classList.toString();
+            const mutationObserver: MutationObserver = new MutationObserver((mutationList) => {
                 for (const item of mutationList) {
                     if (item.attributeName === "class") {
-                        const classString = node.classList.toString();
+                        const classString: string = node.classList.toString();
                         if (classString !== lastClassString) {
                             callback(mutationObserver);
                             lastClassString = classString;
@@ -67,7 +103,8 @@ export class SidebarUtils {
             return mutationObserver;
         }
 
-        onClassChange(this.btnToggle, (observer) => {
+        onClassChange(this.btnToggle, () => {
+            if (!this.btnToggle || !this.svgToggle) return
             if (this.btnToggle.classList.contains("collapsed")) {
                 this.svgToggle.classList.remove('svg_toggle');
             } else {
@@ -76,67 +113,85 @@ export class SidebarUtils {
         });
     }
 
-    show() {
+    private show(): void {
         if (window.location.hash !== "#/login" && window.location.hash !== "#/signup") {
             if (!document.getElementById('nav')) {
-                const myNav = document.createElement('nav');
+                const myNav: HTMLElement = document.createElement('nav');
                 myNav.className = 'sidebar  min-vh-100 fw-medium text-align-center d-flex flex-column align-items-center  border-end col col-2 py-5 px-0 ';
                 myNav.id = 'nav';
                 myNav.innerHTML = this.getLayout();
-                this.root.insertBefore(myNav, this.beforeChild);
+                if (this.root) this.root.insertBefore(myNav, this.beforeChild);
             }
             this.nav = true;
         }
     }
 
-    processBtn() {
-        this.btnIncomeOutcome.addEventListener('click', () => {
-            sessionStorage.removeItem('dates');
+    private processBtn(): void {
+        if (this.btnIncomeOutcome) {
+            this.btnIncomeOutcome.addEventListener('click', (): void => {
+                sessionStorage.removeItem('dates');
+            });
+        }
+        [this.btnMain, this.btnIncomeOutcome].forEach((btn: HTMLElement | null): void => {
+            if (btn) {
+                btn.classList.remove('btn-primary', 'text-light');
+                btn.classList.add('btn-light');
+            }
+            if (this.svgIncomeOutcome && this.svgMain) {
+                this.svgIncomeOutcome.style.fill = '#052C65';
+                this.svgMain.style.fill = '#052C65';
+            }
         });
-        [this.btnMain, this.btnIncomeOutcome].forEach((btn) => {
-            btn.classList.remove('btn-primary', 'text-light');
-            btn.classList.add('btn-light');
-            this.svgIncomeOutcome.style.fill = '#052C65';
-            this.svgMain.style.fill = '#052C65';
-        });
-        [this.btnIncome, this.btnPayments,].forEach((btn) => {
-            btn.classList.remove('bg-primary', 'text-light');
+        [this.btnIncome, this.btnPayments,].forEach((btn: HTMLElement | null): void => {
+            if (btn) btn.classList.remove('bg-primary', 'text-light');
         });
         if (window.location.hash === "#/main") {
-            this.btnMain.classList.remove('btn-light');
-            this.btnMain.classList.add('btn-primary', 'text-light');
-            this.svgMain.style.fill = 'white';
+            if (this.btnMain && this.svgMain) {
+                this.btnMain.classList.remove('btn-light');
+                this.btnMain.classList.add('btn-primary', 'text-light');
+                this.svgMain.style.fill = 'white';
+            }
         }
         if (window.location.hash === "#/income-outcome" || window.location.hash === "#/income-outcome-update") {
-            this.btnIncomeOutcome.classList.remove('btn-light');
-            this.btnIncomeOutcome.classList.add('btn-primary', 'text-light');
-            this.svgIncomeOutcome.style.fill = 'white';
+            if (this.btnIncomeOutcome && this.svgIncomeOutcome) {
+                this.btnIncomeOutcome.classList.remove('btn-light');
+                this.btnIncomeOutcome.classList.add('btn-primary', 'text-light');
+                this.svgIncomeOutcome.style.fill = 'white';
+            }
         }
 
         if (window.location.hash === "#/income" || window.location.hash === "#/income-update" || window.location.hash === "#/income-create") {
-            this.btnIncome.classList.remove('btn-light');
-            this.btnIncome.classList.add('bg-primary', 'text-light');
+            if (this.btnIncome) {
+                this.btnIncome.classList.remove('btn-light')
+                this.btnIncome.classList.add('bg-primary', 'text-light');
+            }
         }
         if (window.location.hash === "#/expense" || window.location.hash === "#/expense-update" || window.location.hash === "#/expense-create") {
-            this.btnPayments.classList.remove('btn-light');
-            this.btnPayments.classList.add('bg-primary', 'text-light');
-        }
-    }
-
-    processSidebar() {
-        if (this.user) {
-            this.userFullName.innerText = this.user.fullName;
-        }
-        this.userLogout.onclick = function () {
-            Auth.logout();
-            const nav = document.getElementById('nav');
-            if (!this.user && nav) {
-                nav.parentNode.removeChild(nav);
+            if (this.btnPayments) {
+                this.btnPayments.classList.remove('btn-light');
+                this.btnPayments.classList.add('bg-primary', 'text-light');
             }
-        };
+        }
     }
 
-    getLayout() {
+    private processSidebar(): void {
+        if (this.user) {
+            if (this.userFullName) this.userFullName.innerText = this.user.fullName;
+        }
+        if (this.userLogout) {
+            const that: SidebarUtils = this
+            this.userLogout.onclick = function () {
+                Auth.logout();
+                const nav: HTMLElement | null = document.getElementById('nav');
+                if (!that.user && nav) {
+                    if (nav.parentNode) nav.parentNode.removeChild(nav);
+                }
+            };
+        }
+
+    }
+
+    private getLayout(): string {
         return `
            <div class="w-100 sidebar_logo pb-3 border-bottom d-flex justify-content-center ">
             <a class="d-flex justify-content-center" href="#/main">

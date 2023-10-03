@@ -2,19 +2,29 @@ import {CustomHttp} from "../services/custom-http";
 import {Auth} from "../services/auth";
 import config from "../../config/config";
 import {SidebarUtils} from "../services/sidebar-utils";
+import {FormFieldType} from "../types/form-field.type";
+import {ResponseDefaultType} from "../types/response-default.type";
+import {ResponseSignupType} from "../types/response-signup.type";
+import {ResponseLoginType} from "../types/response-login.type";
 
 export class Form {
+    private readonly nav: HTMLElement | null
+    private readonly page: 'signup' | 'login'
+    private readonly agreeElement: HTMLElement | null
+    private readonly processElement: HTMLElement | null
+    private fields: FormFieldType[]
 
-    constructor(page) {
+    constructor(page: 'signup' | 'login') {
         this.nav = document.getElementById('nav');
         if (this.nav) {
-     window.location.reload()
+            window.location.reload()
         }
         new SidebarUtils();
         this.page = page;
         this.agreeElement = null;
         this.processElement = null;
-        const accessToken = localStorage.getItem(Auth.accessTokenKey);
+        this.fields = []
+        const accessToken: string | null = localStorage.getItem(Auth.accessTokenKey);
         if (accessToken) {
             location.href = '#/main';
             return;
@@ -53,17 +63,19 @@ export class Form {
             });
         }
 
-        const that = this;
-        this.fields.forEach(item => {
-            item.element = document.getElementById(item.id);
-            item.element.onchange = function () {
-                that.validateField.call(that, item, this);
+        const that: Form = this;
+        this.fields.forEach((item: FormFieldType): void => {
+            item.element = document.getElementById(item.id) as HTMLInputElement;
+            if (item.element) item.element.onchange = function (): void {
+                that.validateField.call(that, item, <HTMLInputElement>this);
             };
         });
         this.processElement = document.getElementById("process");
-        this.processElement.onclick = function () {
-            that.processForm();
-        };
+        if (this.processElement) {
+            this.processElement.onclick = function () {
+                that.processForm();
+            };
+        }
         if (this.page === 'login') {
             this.agreeElement = document.getElementById("form_agree");
             // this.agreeElement.onchange = function () {
@@ -74,7 +86,7 @@ export class Form {
         }
     }
 
-    validateField(field, element) {
+    private validateField(field: FormFieldType, element: HTMLInputElement): void {
         if (!element.value || !element.value.match(field.regex)) {
             element.classList.add('border-danger');
             field.valid = false;
@@ -85,67 +97,73 @@ export class Form {
         this.validateForm();
     }
 
-    validateForm() {
-
-        const validForm = this.fields.every(item => item.valid);
-        const isValid = validForm;
-        if (isValid) {
-            this.processElement.removeAttribute("disabled");
-        } else {
-            this.processElement.setAttribute("disabled", "disabled");
+    private validateForm(): boolean {
+        const validForm: boolean = this.fields.every((item: FormFieldType) => item.valid);
+        const isValid: boolean = validForm;
+        if (this.processElement) {
+            if (isValid) {
+                this.processElement.removeAttribute("disabled");
+            } else {
+                this.processElement.setAttribute("disabled", "disabled");
+            }
         }
         return isValid;
     }
 
-    async processForm() {
+    private async processForm(): Promise<void> {
         if (this.validateForm()) {
-            const email = this.fields.find(item => item.name === 'email').element.value;
-            const password = this.fields.find(item => item.name === 'password').element.value;
+            const email: string | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'email')?.element?.value;
+            const password: string | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'password')?.element?.value;
 
             if (this.page === 'signup') {
-                const fullName = this.fields.find(item => item.name === 'fullName').element.value;
-                const name = fullName.split(" ").slice(0, 2).join(' ');
-                const lastName = fullName.split(" ")[2];
-                const passwordRepeat = this.fields.find(item => item.name === 'passwordTwo').element.value;
-                try {
-                    const result = await CustomHttp.request(config.host + '/signup', 'POST', {
-                        name: name,
-                        lastName: lastName,
-                        email: email,
-                        password: password,
-                        passwordRepeat: passwordRepeat
-                    });
-                    if (result) {
-                        if (result.error || !result.user) {
-                            throw new Error(result.message);
+                const fullName: string | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'fullName')?.element?.value;
+                let name: string
+                let lastName: string
+                if (fullName) {
+                    name = fullName.split(" ").slice(0, 2).join(' ');
+                    lastName = fullName.split(" ")[2];
+
+                    const passwordRepeat: string | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'passwordTwo')?.element?.value;
+                    try {
+                        const result: ResponseDefaultType | ResponseSignupType = await CustomHttp.request(config.host + '/signup', 'POST', {
+                            name: name,
+                            lastName: lastName,
+                            email: email,
+                            password: password,
+                            passwordRepeat: passwordRepeat
+                        });
+                        if (result) {
+                            if ((result as ResponseDefaultType).error || !(result as ResponseSignupType).user) {
+                                throw new Error((result as ResponseDefaultType).message);
+                            }
                         }
-                       // await this.login(email, password);
+                    } catch (error) {
+                        return console.log(error);
                     }
-                } catch (error) {
-                    return console.log(error);
                 }
             }
-          await  this.login(email,password);
+            if (email && password) await this.login(email, password);
         }
     }
 
-    async login(email, password) {
+    private async login(email: string, password: string): Promise<void> {
         try {
-            const result = await CustomHttp.request(config.host + '/login', 'POST', {
+            const result: ResponseLoginType | ResponseDefaultType = await CustomHttp.request(config.host + '/login', 'POST', {
                 email: email,
                 password: password
             });
             if (result) {
-                if (result.error) {
-                    throw new Error(result.message);
+                if ((result as ResponseDefaultType).error) {
+                    throw new Error((result as ResponseDefaultType).message);
                 }
                 // if (this.agreeElement.checked) {
                 //     // create user session?
                 // }
-                Auth.setTokens(result.tokens.accessToken, result.tokens.refreshToken);
+                Auth.setTokens((result as ResponseLoginType).tokens.accessToken, (result as ResponseLoginType).tokens.refreshToken);
                 Auth.setUserInfo({
-                    fullName: result.user.name.split(' ')[0] + ' ' + result.user.lastName,
-                    userId: result.user.id,
+                    fullName: (result as ResponseLoginType).user.name.split(' ')[0] + ' ' + (result as ResponseLoginType).user.lastName,
+                    userId: (result as ResponseLoginType).user.id,
+
                     userEmail: email
                 });
                 location.href = '#/main';

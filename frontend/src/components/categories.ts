@@ -2,9 +2,15 @@ import {SidebarUtils} from "../services/sidebar-utils";
 import {CustomHttp} from "../services/custom-http";
 import config from "../../config/config";
 import {ButtonUtils} from "../services/button-utils";
+import {ResponseCategoriesType} from "../types/response-categories.type";
 
 export class Categories extends ButtonUtils {
-    constructor(type) {
+    private type: HTMLElement | null
+    private cards: HTMLElement | null
+    private readonly cardCreate: HTMLElement | null
+    private createCategory: HTMLElement | null
+
+    constructor(type: string) {
         super();
         this.type = document.getElementById("type");
         this.cards = document.getElementById('cards');
@@ -15,13 +21,13 @@ export class Categories extends ButtonUtils {
         this.dataInit(type);
     }
 
-    async dataInit(type) {
+    private async dataInit(type: string): Promise<void> {
         await SidebarUtils.showBalance();
         await this.getCategories(type);
     }
 
-    getTemplateCard(title, id) {
-        let div = document.createElement('div',);
+    private getTemplateCard(title: string, id: number): HTMLDivElement {
+        let div: HTMLDivElement = document.createElement('div',);
         div.className = 'col';
         div.id = `${id}`;
         div.innerHTML = `
@@ -40,23 +46,23 @@ export class Categories extends ButtonUtils {
         return div;
     }
 
-    async getCategories(type) {
+    private async getCategories(type: string): Promise<void> {
         if (type === "income") {
-            this.createCategory.href = "#/income-create";
+            (this.createCategory as HTMLAnchorElement).href = "#/income-create";
             try {
-                const result = await CustomHttp.request(config.host + '/categories/income',);
+                const result: ResponseCategoriesType[] | null = await CustomHttp.request(config.host + '/categories/income',);
                 if (result) {
-                    this.postLayout(result, type);
+                    this.postLayout(result);
                 }
             } catch (error) {
                 return console.log(error);
             }
         }
         if (type === "expense") {
-            this.type.innerText = "Расходы";
-            this.createCategory.href = "#/expense-create";
+            if (this.type) this.type.innerText = "Расходы";
+            (this.createCategory as HTMLAnchorElement).href = "#/expense-create";
             try {
-                const result = await CustomHttp.request(config.host + '/categories/expense',);
+                const result: ResponseCategoriesType[] | null = await CustomHttp.request(config.host + '/categories/expense',);
                 if (result) {
                     this.postLayout(result);
                 }
@@ -67,10 +73,10 @@ export class Categories extends ButtonUtils {
 
     }
 
-    postLayout(result, type) {
+    private postLayout(result: ResponseCategoriesType[] | null): void {
         if (result) {
-            const layout = result.map(item => this.getTemplateCard(item.title, item.id));
-            layout.forEach(card => this.cards.insertBefore(card, this.cardCreate));
+            const layout: HTMLDivElement[] | null = result.map((item: ResponseCategoriesType) => this.getTemplateCard(item.title, item.id));
+            layout.forEach((card: HTMLDivElement | null) => (this.cards as HTMLElement).insertBefore((card as Node), this.cardCreate));
         }
         this.processCategoryDelete();
         this.processCategoryUpdate();
