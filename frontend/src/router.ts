@@ -7,6 +7,7 @@ import {Update} from "./components/update";
 import {Create} from "./components/create";
 import {IncomeOutcomeOperations} from "./components/incomeOutcomeOperations";
 import {RouteType} from "./types/route.type";
+import {ParamsType} from "./types/params.type";
 
 export class Router {
     private contentElement: HTMLElement | null
@@ -25,7 +26,7 @@ export class Router {
                 template: "templates/signup.html",
                 styles: "",
                 load: () => {
-                    new Form('signup');
+                    new Form(ParamsType.signup);
                 }
             },
             {
@@ -34,7 +35,7 @@ export class Router {
                 template: "templates/login.html",
                 styles: "",
                 load: () => {
-                    new Form('login');
+                    new Form(ParamsType.login);
                 }
             },
             {
@@ -52,7 +53,7 @@ export class Router {
                 template: "templates/categories.html",
                 styles: "",
                 load: () => {
-                    new Categories("income");
+                    new Categories(ParamsType.income);
                 }
             },
             {
@@ -61,7 +62,7 @@ export class Router {
                 template: "templates/categories.html",
                 styles: "",
                 load: () => {
-                    new Categories("expense");
+                    new Categories(ParamsType.expense);
                 }
             },
             {
@@ -79,7 +80,7 @@ export class Router {
                 template: "templates/exin_create.html",
                 styles: "",
                 load: () => {
-                    new Create("income");
+                    new Create(ParamsType.income);
                 }
             },
             {
@@ -88,7 +89,7 @@ export class Router {
                 template: "templates/exin_create.html",
                 styles: "",
                 load: () => {
-                    new Create("expense");
+                    new Create(ParamsType.expense);
                 }
             },
             {
@@ -97,7 +98,7 @@ export class Router {
                 template: "templates/exin_update.html",
                 styles: "",
                 load: () => {
-                    new Update("income");
+                    new Update(ParamsType.income);
                 }
             },
             {
@@ -106,7 +107,7 @@ export class Router {
                 template: "templates/exin_update.html",
                 styles: "",
                 load: () => {
-                    new Update("expense");
+                    new Update(ParamsType.expense);
                 }
             },
             {
@@ -115,7 +116,7 @@ export class Router {
                 template: "templates/income_outcome_update.html",
                 styles: "",
                 load: () => {
-                    new IncomeOutcomeOperations('update');
+                    new IncomeOutcomeOperations(ParamsType.update);
                 }
             },
             {
@@ -124,7 +125,7 @@ export class Router {
                 template: "templates/income_outcome_create.html",
                 styles: "",
                 load: () => {
-                    new IncomeOutcomeOperations('create');
+                    new IncomeOutcomeOperations(ParamsType.create);
                 }
             },
         ];

@@ -1,0 +1,43 @@
+<h1 class="row ps-5 pt-5 mt-5">Главная</h1>
+<div class=" row fw-medium w-75 ps-5 py-5 my-5 d-flex justify-content-center align-items-center gap-3">
+    <button id="today" class="custom-buttons-color active_background fw-medium col btn btn-light">Сегодня
+    </button>
+    <button id="week" class="custom-buttons-color fw-medium col btn btn-light ">Неделя</button>
+    <button id="month" class="custom-buttons-color fw-medium col btn btn-light ">Месяц</button>
+    <button id="year" class="custom-buttons-color fw-medium col  btn btn-light">Год</button>
+    <button id="all" class="custom-buttons-color fw-medium col btn btn-light">Все</button>
+    <button id="interval" class="custom-buttons-color fw-medium col btn btn-light"> Интервал</button>
+    <div class="col d-flex align-items-center justify-content-center gap-2 pe-0">
+        <div class=" text-dark">
+            c
+        </div>
+        <div class="input-group date" id="datepicker">
+            <input id="dateBegin" type="text" class="dates rounded px-2 border-0 form-control"
+                   placeholder="Дата">
+            <span class="input-group-append"></span>
+        </div>
+    </div>
+    <div class="col d-flex align-items-center justify-content-center gap-2">
+        <div class=" text-dark">
+            по
+        </div>
+        <div class="input-group date" id="datepickerTwo">
+            <input id="dateEnd" type="text" class="dates px-2 rounded border-0 form-control" placeholder="Дата">
+            <span class="input-group-append"></span>
+        </div>
+    </div>
+</div>
+<div class="chart mt-5 row">
+    <div class="col mb-5 pe-0 text-center">
+        <h2>Доходы</h2>
+        <div class=" px-5 border-end border-secondary d-flex justify-content-center align-items-center">
+            <canvas id="incomeChart"></canvas>
+        </div>
+    </div>
+    <div class="col ps-0 text-center">
+        <h2>Расходы</h2>
+        <div class="px-5 d-flex justify-content-center align-items-center">
+            <canvas id="paymentsChart"></canvas>
+        </div>
+    </div>
+</div>

@@ -12,10 +12,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jquery": "^3.5.20",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
     "html-webpack-plugin": "^5.5.3",
     "http-server": "^14.1.1",
+    "jquery-datepicker": "^1.12.3",
     "style-loader": "^3.3.3",
     "ts-loader": "^9.4.4",
     "typescript": "^5.2.2",
@@ -28,6 +30,8 @@
     "-": "^0.0.1",
     "@babel/core": "^7.22.5",
     "@babel/preset-env": "^7.22.5",
+    "@types/bootstrap-datepicker": "^0.0.17",
+    "@types/jquery.ui.datetimepicker": "^0.3.31",
     "babel-loader": "^9.1.2",
     "chart.js": "^4.3.3"
   }

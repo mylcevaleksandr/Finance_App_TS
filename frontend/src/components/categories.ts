@@ -5,7 +5,7 @@ import {ButtonUtils} from "../services/button-utils";
 import {ResponseCategoriesType} from "../types/response-categories.type";
 
 export class Categories extends ButtonUtils {
-    private type: HTMLElement | null
+    private readonly type: HTMLElement | null
     private cards: HTMLElement | null
     private readonly cardCreate: HTMLElement | null
     private createCategory: HTMLElement | null

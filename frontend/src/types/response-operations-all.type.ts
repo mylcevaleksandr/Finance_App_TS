@@ -1,5 +1,5 @@
 export  type ResponseOperationsAllType={
-    id: number,
+   id: number,
     type: string,
     amount: number,
     date: string,

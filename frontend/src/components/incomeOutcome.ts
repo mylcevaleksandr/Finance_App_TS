@@ -1,117 +1,33 @@
-import {SidebarUtils} from "../services/sidebar-utils";
 import {CustomHttp} from "../services/custom-http";
 import config from "../../config/config";
+import {ResponseDefaultType} from "../types/response-default.type";
+import {ResponseOperationsAllType} from "../types/response-operations-all.type";
+import {Base} from "./base";
+import {SidebarUtils} from "../services/sidebar-utils";
 
-export class IncomeOutcome {
+export class IncomeOutcome extends Base {
+    private readonly deleteConfirm: HTMLElement | null
+    private readonly tableBody: HTMLElement | null
+
     constructor() {
-        new SidebarUtils();
+        super()
         this.deleteConfirm = document.getElementById('deleteConfirm');
-        this.today = document.getElementById('today');
-        this.week = document.getElementById('week');
-        this.month = document.getElementById('month');
-        this.year = document.getElementById('year');
-        this.all = document.getElementById('all');
-        this.interval = document.getElementById('interval');
         this.tableBody = document.getElementById('tableBody');
-        this.dates = sessionStorage.getItem('dates');
-        this.startDate = null;
-        this.endDate = null;
-
-        this.dataInit();
+        this.dataInit()
     }
 
-    async dataInit(type) {
-        await this.processDateInterval(this);
-        await this.processDates();
+    private async dataInit(): Promise<void> {
+        await this.processDateInterval(this, this.filterData.bind(this));
+        await this.processDates(this.filterData.bind(this));
         await SidebarUtils.showBalance();
         if (!this.dates) {
             await this.getCategories("today");
         }
     }
 
-    processDateInterval(that) {
-        const buttonsArray = [that.today, that.week, that.month, that.year, that.all];
 
-        $(document).ready(function () {
-            $('#datepicker').datepicker({
-                format: 'yyyy-mm-dd'
-            });
-            $('#datepickerTwo').datepicker({
-                format: 'yyyy-mm-dd'
-            });
-            5;
-            $("#dateBegin").on("change", function () {
-                let dateBegin = $(this).val();
-                that.startDate = dateBegin;
-            });
-            $("#dateEnd").on("change", function () {
-                let dateEnd = $(this).val();
-                that.endDate = dateEnd;
-            });
-        });
-        that.interval.addEventListener('click', () => {
-            buttonsArray.forEach((btnClassList) => {
-                btnClassList.classList.remove('active_background');
-            });
-            that.interval.classList.add('active_background');
-            if (!that.startDate || !that.endDate) {
-                alert("Please choose a start date and an end date!");
-            } else {
-                this.getCategoriesFilter(that.startDate, that.endDate);
-            }
-
-        });
-    }
-
-    async getCategoriesFilter(dateBegin, dateEnd) {
-        try {
-            const result = await CustomHttp.request(config.host + '/operations?period=interval&dateFrom=' + dateBegin + '&dateTo=' + dateEnd,);
-            if (result) {
-                this.filterData(result);
-            }
-        } catch (error) {
-            return console.log(error);
-        }
-    }
-
-    processDates() {
-        const buttonsArray = [this.today, this.week, this.month, this.year, this.all];
-
-        if (this.dates) {
-            let find = buttonsArray.find(e => e.id === this.dates);
-            this.interval.classList.remove('active_background');
-            buttonsArray.forEach((btnClassList) => {
-                btnClassList.classList.remove('active_background');
-            });
-            find.classList.add('active_background');
-            this.getCategories(this.dates);
-        }
-        buttonsArray.forEach((button) => {
-            button.addEventListener('click', () => {
-                sessionStorage.setItem('dates', button.id);
-                this.interval.classList.remove('active_background');
-                buttonsArray.forEach((btnClassList) => {
-                    btnClassList.classList.remove('active_background');
-                });
-                button.classList.add('active_background');
-                this.getCategories(button.id);
-            });
-        });
-    }
-
-    async getCategories(date) {
-        try {
-            const result = await CustomHttp.request(config.host + '/operations?period=' + date,);
-            if (result) {
-                this.filterData(result);
-            }
-        } catch (error) {
-            return console.log(error);
-        }
-    }
-
-    layoutTable(index, type, name, amount, date, comment, dataId) {
-        let tableRow = document.createElement('tr');
+    private layoutTable(index: number[], type: string, name: string, amount: number, date: string, comment: string, dataId: number): HTMLTableRowElement {
+        let tableRow: HTMLTableRowElement = document.createElement('tr');
         tableRow.innerHTML = `
             <th scope="row">${index}</th>
             <td data-info="${index}" id="income-outcome-txt">${type}</td>
@@ -119,7 +35,7 @@ export class IncomeOutcome {
             <td>${amount}$</td>
             <td>${date}</td>
             <td>${comment}</td>
-            <td><span className="me-2">
+            <td><span class="me-2">
                         <svg data-bs-toggle="modal"
                              data-bs-target="#modalCenter" id="trash" data-id="${dataId}" width="14" height="15"
                              viewBox="0 0 14 15"
@@ -152,49 +68,51 @@ export class IncomeOutcome {
         return tableRow;
     }
 
-    filterData(data) {
-        this.tableBody.innerHTML = "";
-        let categoryType = null;
-        for (let i = 0; i < data.length; i++) {
-            let expense = false;
-            if (data[i].type === "expense") {
-                categoryType = 'Расход';
-                expense = true;
-            } else if (data[i].type === "income") {
-                categoryType = 'Доход';
-            }
-            this.tableBody.appendChild(this.layoutTable([i + 1], categoryType, data[i].category, data[i].amount, data[i].date, data[i].comment, data[i].id));
-            let dataInfo = document.querySelector(`[data-info="` + [i + 1] + `"]`);
-            if (expense) {
-                dataInfo.classList.add('text-danger');
-            } else {
-                dataInfo.classList.add('text-success');
+    private filterData(data: Array<ResponseOperationsAllType>): void {
+        if (this.tableBody) {
+            this.tableBody.innerHTML = "";
+            let categoryType = null;
+            for (let i = 0; i < data.length; i++) {
+                let expense = false;
+                if (data[i].type === "expense") {
+                    categoryType = 'Расход';
+                    expense = true;
+                } else if (data[i].type === "income") {
+                    categoryType = 'Доход';
+                }
+                this.tableBody.appendChild(this.layoutTable([i + 1], categoryType as string, data[i].category, data[i].amount, data[i].date, data[i].comment, data[i].id));
+                let dataInfo: Element | null = document.querySelector(`[data-info="` + [i + 1] + `"]`);
+                if (expense) {
+                    dataInfo?.classList.add('text-danger');
+                } else {
+                    dataInfo?.classList.add('text-success');
+                }
             }
         }
         this.processCategoryUpdate();
     }
 
 
-    processCategoryUpdate() {
-        const btnTrashPensil = document.querySelectorAll('[data-id]');
-        btnTrashPensil.forEach((button) => {
-            button.addEventListener('click', () => {
-                let operationId = button.dataset.id;
+    private processCategoryUpdate(): void {
+        const btnTrashPencil: NodeListOf<HTMLElement> | null = document.querySelectorAll('[data-id]');
+        btnTrashPencil.forEach((button: HTMLElement): void => {
+            button.addEventListener('click', (): void => {
+                let operationId: string | undefined = button.dataset.id;
                 if (button.id === "trash") {
-                    this.deleteConfirm.addEventListener('click', () => {
-                        this.deleteCategory(operationId);
+                    if (this.deleteConfirm) this.deleteConfirm.addEventListener('click', () => {
+                        if (operationId) this.deleteCategory(operationId);
                     });
                 } else {
-                    sessionStorage.setItem('operationId', operationId);
+                    if (operationId) sessionStorage.setItem('operationId', operationId);
                     location.href = '#/income-outcome-update';
                 }
             });
         });
     }
 
-    async deleteCategory(categoryId) {
+    private async deleteCategory(categoryId: string): Promise<void> {
         try {
-            const result = await CustomHttp.request(config.host + '/operations/' + categoryId, 'DELETE');
+            const result: ResponseDefaultType = await CustomHttp.request(config.host + '/operations/' + categoryId, 'DELETE');
             if (result) {
                 location.href = "#/income-outcome";
             }
