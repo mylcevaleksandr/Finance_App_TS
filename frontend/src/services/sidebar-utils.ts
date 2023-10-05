@@ -84,10 +84,9 @@ export class SidebarUtils {
             this.btnToggle.classList.add('collapsed');
         }
 
-        // Здесь в callback поставил any, не знаю какого типа параметры в этом месте...
-        function onClassChange(node: HTMLElement, callback: any): MutationObserver {
+        function onClassChange(node: HTMLElement, callback: (mutationObserver: MutationObserver) => void): MutationObserver {
             let lastClassString: string = node.classList.toString();
-            const mutationObserver: MutationObserver = new MutationObserver((mutationList) => {
+            const mutationObserver: MutationObserver = new MutationObserver((mutationList: MutationRecord[]): void => {
                 for (const item of mutationList) {
                     if (item.attributeName === "class") {
                         const classString: string = node.classList.toString();
